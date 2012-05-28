@@ -167,12 +167,14 @@ module FluentExt::PlainTextFormatterMixin
       if @add_newline
         self.instance_eval {
           def format(tag,time,record);
+            record[@include_time_to_json_field] = @timef.format(time).to_i if @include_time_to_json
             stringify_record(record) + "\n"
           end
         }
       else
         self.instance_eval {
           def format(tag,time,record);
+            record[@include_time_to_json_field] = @timef.format(time).to_i if @include_time_to_json
             stringify_record(record)
           end
         }
@@ -216,6 +218,9 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
   config_param :path, :string  # /path/pattern/to/hdfs/file can use %Y %m %d %H %M %S
 
   config_param :time_format, :string, :default => nil
+
+  config_param :include_time_to_json, :bool, :default => false
+  config_param :include_time_to_json_field, :string, :default => "time"
 
   config_param :compress, :default => nil do |val|
     c = SUPPORTED_COMPRESS[val.to_sym]
@@ -265,6 +270,9 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
       conf['buffer_path'] ||= "#{conf['path']}.*"
     elsif (conf['path'] || '') =~ /%Y|%m|%d|%H|%M|%S/
       conf['buffer_path'] ||= conf['path'].gsub('%Y','yyyy').gsub('%m','mm').gsub('%d','dd').gsub('%H','HH').gsub('%M','MM').gsub('%S','SS')
+    end
+    if conf.has_key?('include_time_to_json')
+      conf['include_time_to_json'] = true
     end
 
     super
