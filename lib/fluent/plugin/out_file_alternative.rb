@@ -167,14 +167,14 @@ module FluentExt::PlainTextFormatterMixin
       if @add_newline
         self.instance_eval {
           def format(tag,time,record);
-            record[@include_time_to_json_field] = @timef.format(time).to_i if @include_time_to_json
+            record[@include_time_to_json_field] = @timef.format(time).to_i if @include_time_to_json and ((not record[@include_time_to_json_field]) or @include_time_to_json_override)
             stringify_record(record) + "\n"
           end
         }
       else
         self.instance_eval {
           def format(tag,time,record);
-            record[@include_time_to_json_field] = @timef.format(time).to_i if @include_time_to_json
+            record[@include_time_to_json_field] = @timef.format(time).to_i if @include_time_to_json and ((not record[@include_time_to_json_field]) or @include_time_to_json_override)
             stringify_record(record)
           end
         }
@@ -221,6 +221,7 @@ class Fluent::FileAlternativeOutput < Fluent::TimeSlicedOutput
 
   config_param :include_time_to_json, :bool, :default => false
   config_param :include_time_to_json_field, :string, :default => "time"
+  config_param :include_time_to_json_override, :bool, :default => false
 
   config_param :compress, :default => nil do |val|
     c = SUPPORTED_COMPRESS[val.to_sym]
